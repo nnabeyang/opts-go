@@ -8,7 +8,7 @@ import (
 	"os"
 	"testing"
 
-	. "opts"
+	. "opts-go"
 )
 
 func TestXname(t *testing.T) {

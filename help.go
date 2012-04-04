@@ -6,9 +6,8 @@ package opts
 
 import (
 	"fmt"
-	"os"
 	"strings"
-	"tabwriter"
+	"text/tabwriter"
 )
 
 var printHelp *bool
@@ -22,7 +21,7 @@ type helpWriter struct {
 	content string
 }
 
-func (w *helpWriter) Write(data []byte) (n int, err os.Error) {
+func (w *helpWriter) Write(data []byte) (n int, err error) {
 	n = len(data)
 	w.content += string(data)
 	return
@@ -39,12 +38,12 @@ func helpLines() (lines []string) {
 	for _, opt := range optionList {
 		fmt.Print("  ")
 		if opt.Forms()[0] != "" {
-			fmt.Print(opt.Forms()[0]+",")
+			fmt.Print(opt.Forms()[0] + ",")
 		}
 		fmt.Print("\t")
 	}
 	w.Flush()
-	lines = strings.Split(hw.content, "\n", -1)
+	lines = strings.Split(hw.content, "\n")
 	return lines
 }
 

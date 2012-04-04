@@ -11,7 +11,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"container/vector"
 )
 
 //
@@ -127,7 +126,6 @@ func (o genopt) Forms() []string {
 
 func (o genopt) Description() string { return o.description }
 
-
 type flag struct {
 	genopt
 	dest *bool
@@ -171,13 +169,13 @@ func (o single) Invoke(arg string, _ Parsing) {
 type multi struct {
 	genopt
 	valuedesc string
-	dest      *vector.StringVector
+	dest      []string
 }
 
 func (o multi) ArgName() string { return o.valuedesc }
 func (o multi) Arg() int        { return REQARG }
 func (o multi) Invoke(arg string, _ Parsing) {
-	(*o.dest).Push(arg)
+	o.dest = append(o.dest, arg)
 }
 
 // Stores an option of any kind
@@ -203,7 +201,7 @@ func makeShort(s string) string {
 
 // Adds -- if there is none.
 func makeLong(s string) string {
-	s = "--" + strings.TrimLeft(s,"-")
+	s = "--" + strings.TrimLeft(s, "-")
 	return s
 }
 
@@ -218,8 +216,8 @@ func Add(opt Option) {
 		optionList = make([]Option, 2*(len(old)+1))
 		copy(optionList, old)
 	}
-	optionList = optionList[0:l+1]
-	optionList[len(optionList)-1]=opt
+	optionList = optionList[0 : l+1]
+	optionList[len(optionList)-1] = opt
 }
 
 // Flag creates a new Flag-type option, and adds it, returning the destination.
@@ -301,8 +299,8 @@ func LongSingle(lform string, desc string, dflt string) *string {
 }
 
 // Multi creates a new Multi-type option, and adds it, returning the destination.
-func Multi(sform string, lform string, desc string, valuedesc string) *vector.StringVector {
-	dest := &vector.StringVector{}
+func Multi(sform string, lform string, desc string, valuedesc string) []string {
+	dest := []string{}
 	o := multi{
 		genopt: genopt{
 			shortform:   makeShort(sform),
@@ -317,12 +315,12 @@ func Multi(sform string, lform string, desc string, valuedesc string) *vector.St
 }
 
 // ShortMulti is like Multi, but no long form is used.
-func ShortMulti(sform string, desc string, valuedesc string) *vector.StringVector {
+func ShortMulti(sform string, desc string, valuedesc string) []string {
 	return Multi(sform, "", desc, valuedesc)
 }
 
 // LongMulti is like Multi, but no short form is used.
-func LongMulti(lform string, desc string, valuedesc string) *vector.StringVector {
+func LongMulti(lform string, desc string, valuedesc string) []string {
 	return Multi("", lform, desc, valuedesc)
 }
 
@@ -352,7 +350,7 @@ func ParseArgs(args []string) {
 				optsOver = true
 			case arg[1] == '-':
 				// long option
-				argparts := strings.Split(arg, "=", 2)
+				argparts := strings.SplitN(arg, "=", 2)
 				var val string
 				if len(argparts) == 2 {
 					arg, val = argparts[0], argparts[1]
